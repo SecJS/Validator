@@ -20,6 +20,18 @@ describe('\n Sanitizer', () => {
     })
   })
 
+  it('should throw an error when sanitizer schema does not exist', async () => {
+    const data = {}
+
+    try {
+      await userSanitizer.sanitize(data, 'undefined-schema')
+    } catch(error) {
+      expect(error.status).toBe(501)
+      expect(error.name).toBe('NotImplementedException')
+      expect(error.message).toBe('Sanitization schema not implemented.')
+    }
+  })
+
   it('should extend sanitization adding escape rule', async () => {
     /* eslint no-new: "off" */
     new ExtendSanitizer()

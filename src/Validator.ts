@@ -1,5 +1,3 @@
-import { getValue } from 'indicative-utils'
-import { NotImplementedException } from '@secjs/exceptions'
 import {
   extend,
   validate,
@@ -7,8 +5,52 @@ import {
   validations,
 } from 'indicative/validator'
 
+import { getValue } from 'indicative-utils'
+import { VanillaFormatter } from 'indicative-formatters'
+import { NotImplementedException } from '@secjs/exceptions'
+
 export class Validator {
+  get validateAll(): boolean {
+    return true
+  }
+
+  get removeAdditional(): boolean {
+    return false
+  }
+
+  get formatter() {
+    return VanillaFormatter
+  }
+
+  get strictUndefined(): boolean {
+    return false
+  }
+
+  get messages(): any {
+    return {}
+  }
+
   protected validations = validations
+
+  private get config() {
+    return {
+      formatter: this.formatter,
+      existyStrict: this.strictUndefined,
+      removeAdditional: this.removeAdditional
+    }
+  }
+
+  private resolveDefaults(messages?: any, config?: any) {
+    if (!messages) messages = {}
+
+    messages = { ...messages, ...this.messages }
+
+    if (!config) config = {}
+
+    config = { ...config, ...this.config }
+
+    return { msg: messages, cfg: config }
+  }
 
   getValue(data: any, field: string) {
     return getValue(data, field)
@@ -28,27 +70,15 @@ export class Validator {
     })
   }
 
-  async validate(value, type = 'createSchema', messages = {}, config = {}) {
+  async validate(value, type = 'schema', messages?: any, config?: any) {
+    const { msg, cfg } = this.resolveDefaults(messages, config)
+
     if (!this[type]) {
       throw new NotImplementedException('Validation schema not implemented.')
     }
 
-    try {
-      await validate(value, this[type](), messages, config)
-    } catch (error) {
-      return error
-    }
-  }
+    if (this.validateAll) return validateAll(value, this[type], msg, cfg)
 
-  async validateAll(value, type = 'createSchema', messages = {}, config = {}) {
-    if (!this[type]) {
-      throw new NotImplementedException('Validation schema not implemented.')
-    }
-
-    try {
-      await validateAll(value, this[type](), messages, config)
-    } catch (errors) {
-      return errors
-    }
+    return validate(value, this[type], msg, cfg)
   }
 }
