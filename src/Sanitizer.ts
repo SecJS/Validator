@@ -19,15 +19,11 @@ export class Sanitizer {
     })
   }
 
-  async sanitize(value, type = 'createSchema', config = {}) {
+  async sanitize(value, type = 'schema', config = {}) {
     if (!this[type]) {
       throw new NotImplementedException('Sanitization schema not implemented.')
     }
 
-    try {
-      return sanitize(value, this[type](), config)
-    } catch (error) {
-      return error
-    }
+    return sanitize(value, this[type], config)
   }
 }

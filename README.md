@@ -36,18 +36,18 @@ npm install @secjs/validator
 
 > Use Validator class to extend in your validation classes
 
-```js
+```ts
 import { Validator } from '@secjs/validator'
 
 export class UserValidator extends Validator {
-  createSchema() {
+  get schema() {
     return {
       name: 'string|required',
       email: 'email|required',
     }
   }
 
-  updateSchema() {
+  get updateSchema()  {
     return {
       name: 'string',
       email: 'string',
@@ -57,8 +57,109 @@ export class UserValidator extends Validator {
 
 const userValidator = new UserValidator()
 
-userValidator.validate({ name: 'João', email: 'lenonSec7@gmail.com' }, 'createSchema') // Return on first error or undefined
-userValidator.validateAll({ name: 'João', email: 'lenonSec7@gmail.com' }, 'updateSchema') // Return all errors or undefined
+try {
+  const validatedData = await userValidator.validate({ 
+    name: 'João', 
+    email: 'lenonSec7@gmail.com' 
+  }, 'schema')
+  
+  return validatedData
+} catch(error) {
+  // All the validation errors found
+  throw error
+}
+```
+
+### Nice validator options
+
+> Fail on first and clean the data
+
+```ts
+import { Validator } from '@secjs/validator'
+
+export class UserValidator extends Validator {
+  get validateAll() {
+    return false
+  }
+  
+  get removeAdditional() {
+    return true
+  }
+  
+  get schema() {
+    return {
+      name: 'string|required',
+      email: 'email|required',
+    }
+  }
+}
+
+const userValidator = new UserValidator()
+
+try {
+  const validatedData = await userValidator.validate({ 
+    name: 'João', 
+    email: 'lenonSec7@gmail.com', 
+    additionalProp: 'hello' 
+  }, 'schema')
+
+  return validatedData // { name: 'João', email: 'lenonSec7@gmail.com' } without additionalProp
+} catch(error) {
+  // Only the first validation error found
+  throw error 
+  // [
+  //   {
+  //     message: 'required validation failed on name',
+  //     validation: 'required',
+  //     field: 'name',
+  //   }
+  // ]
+}
+```
+
+### Custom error messages
+
+> Use custom error messages and Internationalization support
+
+```ts
+import { Validator } from '@secjs/validator'
+
+export class UserValidator extends Validator {
+  get messages() {
+    return {
+      email: '{{ field }} is not a valid email',
+      // pt-br
+      'name.required': '{{ field }} é obrigatório para criar um usuário'
+    }
+  }
+  
+  get schema() {
+    return {
+      name: 'string|required',
+      email: 'email|required',
+    }
+  }
+}
+
+const userValidator = new UserValidator()
+
+try {
+// try implementation...
+} catch(error) {
+  throw error 
+  // [
+  //   {
+  //     message: 'name é obrigatório para criar um usuário',
+  //     validation: 'required',
+  //     field: 'name',
+  //   },
+  //  {
+  //     message: 'email is not a valid email',
+  //     validation: 'email',
+  //     field: 'email',
+  //   }
+  // ]
+}
 ```
 
 ## Sanitizer
@@ -69,22 +170,24 @@ userValidator.validateAll({ name: 'João', email: 'lenonSec7@gmail.com' }, 'upda
 import { Sanitizer } from '@secjs/validator'
 
 export class UserSanitizer extends Sanitizer {
-  createSchema() {
+  get schema() {
     return {
-      email: 'trim',
+      email: 'trim|lower_case',
     }
   }
 
-  updateSchema() {
+  get updateSchema() {
     return {
-      email: 'trim',
+      email: 'trim|lower_case',
     }
   }
 }
 
 const userSanitizer = new UserSanitizer()
 
-userSanitizer.sanitize({ email: 'lenonSec7@gmail.com' }, 'createSchema') // Return the object with sanitizations implemented
+userSanitizer.sanitize({ 
+  email: 'lenonSec7@gmail.com      ' 
+}, 'schema') // Return the object with sanitizations implemented
 // { email: 'lenonsec7@gmail.com' }
 ```
 
