@@ -58,7 +58,10 @@ export class UserValidator extends Validator {
 const userValidator = new UserValidator()
 
 try {
-  const validatedData = await userValidator.validate({ name: 'João', email: 'lenonSec7@gmail.com' }, 'schema')
+  const validatedData = await userValidator.validate({ 
+    name: 'João', 
+    email: 'lenonSec7@gmail.com' 
+  }, 'schema')
   
   return validatedData
 } catch(error) {
@@ -94,7 +97,11 @@ export class UserValidator extends Validator {
 const userValidator = new UserValidator()
 
 try {
-  const validatedData = await userValidator.validate({ name: 'João', email: 'lenonSec7@gmail.com', additionalProp: 'hello' }, 'schema')
+  const validatedData = await userValidator.validate({ 
+    name: 'João', 
+    email: 'lenonSec7@gmail.com', 
+    additionalProp: 'hello' 
+  }, 'schema')
 
   return validatedData // { name: 'João', email: 'lenonSec7@gmail.com' } without additionalProp
 } catch(error) {
@@ -178,7 +185,9 @@ export class UserSanitizer extends Sanitizer {
 
 const userSanitizer = new UserSanitizer()
 
-userSanitizer.sanitize({ email: 'lenonSec7@gmail.com      ' }, 'schema') // Return the object with sanitizations implemented
+userSanitizer.sanitize({ 
+  email: 'lenonSec7@gmail.com      ' 
+}, 'schema') // Return the object with sanitizations implemented
 // { email: 'lenonsec7@gmail.com' }
 ```
 
